@@ -76,7 +76,7 @@ dand_eat_count = 0
 dand_visible = True
 dand_eat_start_time = 0
 
-ESS_DAUER = bewegung_delay * 2
+ESS_DAUER = bewegung_delay * 5
 
 
 strawb_hoehe_temp = schrittweite /5 
@@ -178,71 +178,74 @@ while spielaktiv:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 spielaktiv = False
-            if event.key == pygame.K_d or pygame.K_a or pygame.K_w or pygame.K_s or pygame.K_SPACE:
+            #if event.key == pygame.K_d or pygame.K_a or pygame.K_w or pygame.K_s or pygame.K_SPACE:
+            if event.key in (pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE):
                 letzte_taste = event.key
-        
-        #Zeit abfragen (für bewegung)
-        aktuelle_zeit = pygame.time.get_ticks()
+            elif event.type == pygame.KEYUP:
+                if event.key in (pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE):
+                    letzte_taste = None
+    
+    #Zeit abfragen (für bewegung)
+    aktuelle_zeit = pygame.time.get_ticks()
 
-        # Tastenzustand abfragen (für Bewegung)
-        if letzte_taste and aktuelle_zeit - letzte_bewegung >= bewegung_delay:
-            # X-Richtung
-            if letzte_taste == pygame.K_d and charpos_x + bewegung_x <= FENSTERBREITE - CHAR_DURCHMESSER - FENSTER_PADDING:
-                ziel_x = charpos_x + bewegung_x
-                bewegt_sich = True
-                blickrichtung = "toright"
-                chick_allpos = chick_toright
-                letzte_bewegung = aktuelle_zeit
-            elif letzte_taste == pygame.K_a and charpos_x - bewegung_x >= FENSTER_PADDING:
-                ziel_x = charpos_x - bewegung_x
-                bewegt_sich = True
-                blickrichtung = "toleft"
-                chick_allpos = chick_toleft
-                letzte_bewegung = aktuelle_zeit
-            # Y-Richtung
-            elif letzte_taste == pygame.K_s and charpos_y + bewegung_y <= FENSTERHOEHE - CHAR_DURCHMESSER - FENSTER_PADDING:
-                ziel_y = charpos_y + bewegung_y
-                blickrichtung = "front"
-                chick_allpos = chick_front
-                bewegt_sich = True
-                letzte_bewegung = aktuelle_zeit
-            elif letzte_taste == pygame.K_w and charpos_y - bewegung_y >= FENSTER_PADDING:
-                ziel_y = charpos_y - bewegung_y
-                blickrichtung = "back"
-                chick_allpos = chick_back
-                bewegt_sich = True
-                letzte_bewegung = aktuelle_zeit
-            
+    # Tastenzustand abfragen (für Bewegung)
+    if letzte_taste and aktuelle_zeit - letzte_bewegung >= bewegung_delay:
+        # X-Richtung
+        if letzte_taste == pygame.K_d and charpos_x + bewegung_x <= FENSTERBREITE - CHAR_DURCHMESSER - FENSTER_PADDING:
+            ziel_x = charpos_x + bewegung_x
+            bewegt_sich = True
+            blickrichtung = "toright"
+            chick_allpos = chick_toright
+            letzte_bewegung = aktuelle_zeit
+        elif letzte_taste == pygame.K_a and charpos_x - bewegung_x >= FENSTER_PADDING:
+            ziel_x = charpos_x - bewegung_x
+            bewegt_sich = True
+            blickrichtung = "toleft"
+            chick_allpos = chick_toleft
+            letzte_bewegung = aktuelle_zeit
+        # Y-Richtung
+        elif letzte_taste == pygame.K_s and charpos_y + bewegung_y <= FENSTERHOEHE - CHAR_DURCHMESSER - FENSTER_PADDING:
+            ziel_y = charpos_y + bewegung_y
+            blickrichtung = "front"
+            chick_allpos = chick_front
+            bewegt_sich = True
+            letzte_bewegung = aktuelle_zeit
+        elif letzte_taste == pygame.K_w and charpos_y - bewegung_y >= FENSTER_PADDING:
+            ziel_y = charpos_y - bewegung_y
+            blickrichtung = "back"
+            chick_allpos = chick_back
+            bewegt_sich = True
+            letzte_bewegung = aktuelle_zeit
+        
 # ist Küken auf dem löwenzahn?
-            if letzte_taste == pygame.K_SPACE:
-                if charpos_x == dandpos_x and charpos_y == dandpos_y: 
-                    txtin_space_content = txtaktion_eatdand
+        if letzte_taste == pygame.K_SPACE:
+            if charpos_x == dandpos_x and charpos_y == dandpos_y: 
+                txtin_space_content = txtaktion_eatdand
+                blickrichtung = "front"
+                if dand_eat_count == 1 and pygame.time.get_ticks() - dand_eat_start_time >= ESS_DAUER:
+                    dand_visible = False
+                    dand_eat_count = 0
+                    dand_eat_status = "not eaten"
+                elif dand_eat_count == 0 and pygame.time.get_ticks() - dand_eat_start_time >= ESS_DAUER:
+                    dand_eat_status = "eaten"
+                    dand_eat_count = 1
+                    dand_eat_start_time = pygame.time.get_ticks()
+                    
+            if charpos_x == strawbpos_x and charpos_y == strawbpos_y:
+                txtin_space_content = txt_aktion_eatstrawb
+                if strawb_eat_status == "not eaten":
                     blickrichtung = "front"
-                    if dand_eat_count == 1 and pygame.time.get_ticks() - dand_eat_start_time >= ESS_DAUER:
-                        dand_visible = False
-                        dand_eat_count = 0
-                        dand_eat_status = "not eaten"
-                    elif dand_eat_count == 0 and pygame.time.get_ticks() - dand_eat_start_time >= ESS_DAUER:
-                        dand_eat_status = "eaten"
-                        dand_eat_count = 1
-                        dand_eat_start_time = pygame.time.get_ticks()
-                        
-                if charpos_x == strawbpos_x and charpos_y == strawbpos_y:
-                    txtin_space_content = txt_aktion_eatstrawb
-                    if strawb_eat_status == "not eaten":
-                        blickrichtung = "front"
-                        strawb_eat_start_time = pygame.time.get_ticks()
-                        if strawb_eat_start_time >= ESS_DAUER:
-                            strawb_eat_status = "eaten"
-                            strawb_eat_start_time = 0
-                            strawb_eat_start_time = pygame.time.get_ticks()
-                    elif strawb_eat_status == "eaten":
-                        curr_txt = txtin_unessbar
-                else:
-                    if strawb_eat_start_time != 0:
+                    strawb_eat_start_time = pygame.time.get_ticks()
+                    if strawb_eat_start_time >= ESS_DAUER:
+                        strawb_eat_status = "eaten"
                         strawb_eat_start_time = 0
-        
-
+                        strawb_eat_start_time = pygame.time.get_ticks()
+                elif strawb_eat_status == "eaten":
+                    curr_txt = txtin_unessbar
+            else:
+                if strawb_eat_start_time != 0:
+                    strawb_eat_start_time = 0
+        pass
 
     # --- Spiellogik hier integrieren ---#
 
@@ -279,6 +282,7 @@ while spielaktiv:
         # Bewegung beenden
         if fertig_x and fertig_y:
             bewegt_sich = False
+            letzte_taste = None
     
     
     # Spielfeld löschen
